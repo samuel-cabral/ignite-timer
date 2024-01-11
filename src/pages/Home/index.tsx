@@ -49,16 +49,18 @@ export function Home() {
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
   useEffect(() => {
+    let interval: NodeJS.Timeout
+
     if (activeCycle) {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         setAmountSecondsPassed(
           differenceInSeconds(new Date(), activeCycle.startDate),
         )
       }, 1000)
+    }
 
-      return () => {
-        clearInterval(interval)
-      }
+    return () => {
+      clearInterval(interval)
     }
   }, [activeCycle])
 
@@ -74,6 +76,7 @@ export function Home() {
 
     setCycles((state) => [...state, newCycle])
     setActiveCycleId(id)
+    setAmountSecondsPassed(0)
 
     reset()
   }
@@ -91,6 +94,12 @@ export function Home() {
   const [secondsLeft, secondsRight] = String(secondsAmount)
     .padStart(2, '0')
     .split('')
+
+  useEffect(() => {
+    if (activeCycle) {
+      document.title = `Ignite Timer | ${minutesLeft}${minutesRight}:${secondsLeft}${secondsRight}`
+    }
+  }, [minutesLeft, minutesRight, secondsLeft, secondsRight])
 
   const task = watch('task')
   const taskInputIsEmpty = !task
