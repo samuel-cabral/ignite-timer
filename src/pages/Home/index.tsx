@@ -10,10 +10,16 @@ import {
   TaskInput,
 } from './styles'
 
+// controlled ? uncontrolled
+
 export function Home() {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+  }
+
   return (
     <HomeContainer>
-      <form>
+      <form onSubmit={handleSubmit} action="">
         <FormContainer>
           <label htmlFor="task">Vou trabalhar em</label>
           <TaskInput
