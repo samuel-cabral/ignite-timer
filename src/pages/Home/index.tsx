@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-import { Play } from '@phosphor-icons/react'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { HandPalm, Play } from '@phosphor-icons/react'
 import { differenceInSeconds } from 'date-fns'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
 import {
   CountdownContainer,
@@ -13,6 +13,7 @@ import {
   MinutesAmountInput,
   Separator,
   StartCountdownButton,
+  StopCountdownButton,
   TaskInput,
 } from './styles'
 
@@ -35,6 +36,7 @@ interface Cycle {
 
 export function Home() {
   const [cycles, setCycles] = useState<Cycle[]>([])
+  console.log('🚀 ~ Home ~ cycles:', cycles)
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
 
@@ -81,6 +83,22 @@ export function Home() {
     reset()
   }
 
+  function handleInterruptCycle() {
+    const updatedCycles = [...cycles].map((cycle) => {
+      if (cycle.id === activeCycleId) {
+        return {
+          ...cycle,
+          interruptedDate: new Date(),
+        }
+      }
+
+      return cycle
+    })
+
+    setCycles(updatedCycles)
+    setActiveCycleId(null)
+  }
+
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
   const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
 
@@ -99,7 +117,7 @@ export function Home() {
     if (activeCycle) {
       document.title = `Ignite Timer | ${minutesLeft}${minutesRight}:${secondsLeft}${secondsRight}`
     }
-  }, [minutesLeft, minutesRight, secondsLeft, secondsRight])
+  }, [minutesLeft, minutesRight, secondsLeft, secondsRight, activeCycle])
 
   const task = watch('task')
   const taskInputIsEmpty = !task
@@ -113,6 +131,7 @@ export function Home() {
             id="task"
             list="task-suggestions"
             placeholder="Dê um nome para o seu projeto"
+            disabled={!!activeCycle}
             {...register('task')}
           />
 
@@ -130,7 +149,7 @@ export function Home() {
             placeholder="00"
             step={5}
             min={5}
-            // max={60}
+            disabled={!!activeCycle}
             {...register('minutesAmount', {
               valueAsNumber: true,
             })}
@@ -147,10 +166,17 @@ export function Home() {
           <span>{secondsRight}</span>
         </CountdownContainer>
 
-        <StartCountdownButton disabled={taskInputIsEmpty} type="submit">
-          <Play size={24} />
-          Começar
-        </StartCountdownButton>
+        {activeCycle ? (
+          <StopCountdownButton type="button" onClick={handleInterruptCycle}>
+            <HandPalm size={24} />
+            Interromper
+          </StopCountdownButton>
+        ) : (
+          <StartCountdownButton disabled={taskInputIsEmpty} type="submit">
+            <Play size={24} />
+            Começar
+          </StartCountdownButton>
+        )}
       </form>
     </HomeContainer>
   )
